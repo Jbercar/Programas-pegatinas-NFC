@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Lista de la Compra</title>
+  <!-- Tipografía moderna Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Iconos de Lucide -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    :root {
+      --bg-color: #f4f6f8;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --success: #10b981;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      
+      /* Colores por Categoría */
+      --cat-fruta: #10b981;
+      --cat-sano: #06b6d4;
+      --cat-guarreria: #f59e0b;
+      --cat-otro: #8b5cf6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Cabecera */
+    header {
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      color: white;
+      padding: 24px;
+      border-radius: 24px;
+      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3);
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* Botón Compra Realizada */
+    .clear-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 20px;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .clear-btn:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    }
+
+    /* Formulario y Categorías */
+    .input-card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .cat-btn {
+      border: 2px solid #e2e8f0;
+      background: white;
+      padding: 12px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+
+    .cat-btn i {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Estados Activos de Categorías */
+    .cat-btn[data-cat="fruta"].active {
+      border-color: var(--cat-fruta);
+      background: #ecfdf5;
+      color: #047857;
+    }
+    .cat-btn[data-cat="sano"].active {
+      border-color: var(--cat-sano);
+      background: #ecfeff;
+      color: #0e7490;
+    }
+    .cat-btn[data-cat="guarreria"].active {
+      border-color: var(--cat-guarreria);
+      background: #fffbeb;
+      color: #b45309;
+    }
+    .cat-btn[data-cat="otro"].active {
+      border-color: var(--cat-otro);
+      background: #f5f3ff;
+      color: #6d28d9;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 14px 18px;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+    }
+
+    .add-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0 20px;
+      border-radius: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s;
+    }
+
+    .add-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Lista de Productos */
+    .list-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .item-card {
+      background: var(--card-bg);
+      padding: 14px 18px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .item-tag {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .item-tag.fruta { background-color: var(--cat-fruta); }
+    .item-tag.sano { background-color: var(--cat-sano); }
+    .item-tag.guarreria { background-color: var(--cat-guarreria); }
+    .item-tag.otro { background-color: var(--cat-otro); }
+
+    .item-text {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      transition: color 0.2s;
+    }
+
+    .delete-btn:hover {
+      color: #ef4444;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <h1><i data-lucide="shopping-cart"></i> MI LISTA DE LA COMPRA</h1>
+    </header>
+
+    <!-- Botón para vaciar toda la lista -->
+    <button class="clear-btn" id="clearBtn">
+      <i data-lucide="check-check"></i> COMPRA REALIZADA
+    </button>
+
+    <div class="input-card">
+      <span class="section-title">1. Selecciona Categoría</span>
+      <div class="categories-grid">
+        <button class="cat-btn active" data-cat="fruta">
+          <i data-lucide="apple"></i> Fruta y Verdura
+        </button>
+        <button class="cat-btn" data-cat="sano">
+          <i data-lucide="salad"></i> Sano
+        </button>
+        <button class="cat-btn" data-cat="guarreria">
+          <i data-lucide="cookie"></i> Guarrerías
+        </button>
+        <button class="cat-btn" data-cat="otro">
+          <i data-lucide="package"></i> Otro
+        </button>
+      </div>
+
+      <span class="section-title">2. Escribe el Producto</span>
+      <div class="input-group">
+        <input type="text" id="itemInput" placeholder="Ej: Plátanos, Galletas..." autocomplete="off">
+        <button class="add-btn" id="addBtn">
+          <i data-lucide="plus"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Lista de artículos -->
+    <div class="list-container" id="shoppingList">
+      <!-- Los elementos aparecerán aquí mediante Javascript -->
+    </div>
+  </div>
+
+  <script>
+    // Inicializar Iconos
+    lucide.createIcons();
+
+    // Mapeo de Categorías
+    const categoryConfig = {
+      fruta: { label: 'Fruta y Verdura', icon: 'apple' },
+      sano: { label: 'Sano', icon: 'salad' },
+      guarreria: { label: 'Guarrerías', icon: 'cookie' },
+      otro: { label: 'Otro', icon: 'package' }
+    };
+
+    let selectedCategory = 'fruta';
+    let items = JSON.parse(localStorage.getItem('nfc_shopping_list')) || [];
+
+    // Selección de categoría
+    const catButtons = document.querySelectorAll('.cat-btn');
+    catButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        catButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedCategory = btn.getAttribute('data-cat');
+      });
+    });
+
+    // Agregar Item
+    const itemInput = document.getElementById('itemInput');
+    const addBtn = document.getElementById('addBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const shoppingList = document.getElementById('shoppingList');
+
+    function addItem() {
+      const text = itemInput.value.trim();
+      if (!text) return;
+
+      const newItem = {
+        id: Date.now(),
+        text: text,
+        category: selectedCategory
+      };
+
+      items.unshift(newItem);
+      saveAndRender();
+      itemInput.value = '';
+    }
+
+    addBtn.addEventListener('click', addItem);
+    itemInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addItem();
+    });
+
+    // Vaciar toda la lista
+    clearBtn.addEventListener('click', () => {
+      if (items.length === 0) return;
+      
+      const confirmClear = confirm("¿Has terminado la compra? Se borrarán todos los productos de la lista.");
+      if (confirmClear) {
+        items = [];
+        saveAndRender();
+      }
+    });
+
+    // Borrar Item individual
+    function deleteItem(id) {
+      items = items.filter(item => item.id !== id);
+      saveAndRender();
+    }
+
+    // Guardar en LocalStorage y Renderizar
+    function saveAndRender() {
+      localStorage.setItem('nfc_shopping_list', JSON.stringify(items));
+      
+      if (items.length === 0) {
+        shoppingList.innerHTML = `
+          <div class="empty-state">
+            <i data-lucide="check-circle-2"></i>
+            <p>¡La lista está vacía!</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      shoppingList.innerHTML = items.map(item => `
+        <div class="item-card">
+          <div class="item-left">
+            <div class="item-tag ${item.category}">
+              <i data-lucide="${categoryConfig[item.category].icon}"></i>
+            </div>
+            <span class="item-text">${item.text}</span>
+          </div>
+          <button class="delete-btn" onclick="deleteItem(${item.id})">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // Carga inicial
+    saveAndRender();
+  </script>
+</body>
+</html>
