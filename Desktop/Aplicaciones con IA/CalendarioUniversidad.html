@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Panel Universitario NFC</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #f8fafc;
+            color: var(--text-main);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #1e1b4b;
+            margin-top: 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Menú Principal */
+        .hero-banner {
+            background: var(--bg-gradient);
+            padding: 24px;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .hero-banner h1 { color: white; margin-bottom: 8px; font-size: 24px; }
+        .hero-banner p { margin: 0; opacity: 0.9; font-size: 14px; }
+
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            background: white;
+            color: #4f46e5;
+            border: 2px solid #e0e7ff;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .menu-btn:hover {
+            background: #eef2ff;
+            border-color: #c7d2fe;
+            transform: translateY(-2px);
+        }
+
+        .back-btn {
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .back-btn:hover { background: #e2e8f0; }
+
+        /* Pestañas de Días de la Semana */
+        .days-tabs {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            scrollbar-width: none;
+        }
+        .days-tabs::-webkit-scrollbar { display: none; }
+
+        .day-tab {
+            flex: 0 0 auto;
+            padding: 8px 14px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .day-tab.active {
+            background: #4f46e5;
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Franjas */
+        .slot-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .slot-title {
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .slot-time {
+            font-size: 11px;
+            background: #e2e8f0;
+            color: #334155;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Botones de Asignaturas con Colores */
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .sub-btn {
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: left;
+            font-weight: 600;
+            transition: opacity 0.2s, transform 0.1s;
+            line-height: 1.2;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .sub-btn:active { transform: scale(0.97); }
+
+        .sub-btn span.rec {
+            font-size: 9px;
+            opacity: 0.85;
+            font-weight: normal;
+        }
+
+        /* Estilo especial para el botón de "No hay clase" que ocupe todo el ancho */
+        .sub-btn.no-class {
+            grid-column: span 2;
+            text-align: center;
+            align-items: center;
+            background: #f1f5f9;
+            color: #475569;
+            border-left: 4px solid #94a3b8;
+        }
+
+        /* Colores específicos de asignaturas */
+        .sub-0 { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; }
+        .sub-1 { background: #fce7f3; color: #9d174d; border-left: 4px solid #ec4899; }
+        .sub-2 { background: #ccfbf1; color: #115e59; border-left: 4px solid #14b8a6; }
+        .sub-3 { background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+        .sub-4 { background: #f3e8ff; color: #6b21a8; border-left: 4px solid #a855f7; }
+        .sub-5 { background: #f8fafc; color: #475569; border-left: 4px solid #94a3b8; }
+
+        /* Tarjeta seleccionada en grande */
+        .selected-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .item-0 { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .item-1 { background: #fdf2f8; color: #9d174d; border: 1px solid #fbcfe8; }
+        .item-2 { background: #f0fdfa; color: #115e59; border: 1px solid #99f6e4; }
+        .item-3 { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+        .item-4 { background: #faf5ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+        .item-5 { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+        .badge-type {
+            font-size: 11px;
+            background: rgba(0,0,0,0.08);
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .change-btn {
+            background: white;
+            border: 1px solid currentColor;
+            color: inherit;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .change-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        /* Plan de estudios */
+        .study-day-container {
+            margin-bottom: 16px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .study-day-title {
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 50px;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            resize: none;
+            font-family: inherit;
+            font-size: 13px;
+            box-sizing: border-box;
+            background: white;
+        }
+        textarea:focus { outline: 2px solid #4f46e5; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- MENÚ PRINCIPAL -->
+    <div id="main-menu">
+        <div class="hero-banner">
+            <h1>Panel NFC</h1>
+            <p>Tu universidad siempre a un toque</p>
+        </div>
+        <button class="menu-btn" onclick="showSection('clases')">📅 Horario de Clases</button>
+        <button class="menu-btn" onclick="showSection('estudios')">📚 Plan de Estudios Semanal</button>
+    </div>
+
+    <!-- SECCIÓN: HORARIO DE CLASES -->
+    <div id="section-clases" class="hidden">
+        <button class="back-btn" onclick="showMenu()">⬅ Volver al Menú</button>
+        <h2>Horario de Clases</h2>
+        
+        <!-- Pestañas de Días -->
+        <div class="days-tabs" id="days-tabs-container">
+            <button class="day-tab active" onclick="changeDay('Lunes')">Lunes</button>
+            <button class="day-tab" onclick="changeDay('Martes')">Martes</button>
+            <button class="day-tab" onclick="changeDay('Miércoles')">Miércoles</button>
+            <button class="day-tab" onclick="changeDay('Jueves')">Jueves</button>
+            <button class="day-tab" onclick="changeDay('Viernes')">Viernes</button>
+        </div>
+
+        <!-- Contenedor de Franjas Dinámicas -->
+        <div id="franjas-clases-container"></div>
+    </div>
+
+    <!-- SECCIÓN: PLAN DE ESTUDIOS -->
+    <div id="section-estudios" class="hidden">
+        <button class="back-btn" onclick="showMenu()">⬅ Volver al Menú</button>
+        <h2>Plan de Estudios Semanal</h2>
+        <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: -8px; margin-bottom: 16px;">Apunta tus metas u objetivos por franja para toda la semana.</p>
+        
+        <div id="study-container"></div>
+    </div>
+</div>
+
+<script>
+    const subjects = [
+        { name: "Procesadores de lenguajes", index: 0 },
+        { name: "Ciberseguridad", index: 1 },
+        { name: "IA", index: 2 },
+        { name: "Análisis y diseño de aplicaciones", index: 3 },
+        { name: "Electrónica digital", index: 4 },
+        { name: "¡¡NO HAY CLASE!!", index: 5, isSpecial: true }
+    ];
+
+    // Recomendaciones oficiales basadas en tu horario
+    const officialRecommendations = {
+        "Lunes": { c1: "Electrónica digital", c2: "Ciberseguridad", c3: "Procesadores de lenguajes" },
+        "Martes": { c1: "Análisis y diseño de aplicaciones", c2: "IA", c3: "Procesadores de lenguajes" },
+        "Miércoles": { c1: "Procesadores de lenguajes", c2: "Análisis y diseño de aplicaciones", c3: "Electrónica digital" },
+        "Jueves": { c1: "Ciberseguridad", c2: "IA", c3: "Análisis y diseño de aplicaciones" },
+        "Viernes": { c1: "Ciberseguridad", c2: "IA", c3: "Electrónica digital" }
+    };
+
+    const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+    const slots = [
+        { id: 'c1', label: 'Franja 1', time: '8:45 - 10:30' },
+        { id: 'c2', label: 'Franja 2', time: '10:45 - 12:30' },
+        { id: 'c3', label: 'Franja 3', time: '12:45 - 14:30' }
+    ];
+
+    let currentDay = "Lunes";
+
+    let appData = JSON.parse(localStorage.getItem('nfc_uni_data_v10')) || {
+        clases: {
+            "Lunes": { c1: null, c2: null, c3: null },
+            "Martes": { c1: null, c2: null, c3: null },
+            "Miércoles": { c1: null, c2: null, c3: null },
+            "Jueves": { c1: null, c2: null, c3: null },
+            "Viernes": { c1: null, c2: null, c3: null }
+        },
+        estudios: {
+            "Lunes": { s1: '', s2: '', s3: '' },
+            "Martes": { s1: '', s2: '', s3: '' },
+            "Miércoles": { s1: '', s2: '', s3: '' },
+            "Jueves": { s1: '', s2: '', s3: '' },
+            "Viernes": { s1: '', s2: '', s3: '' }
+        }
+    };
+
+    function saveData() {
+        localStorage.setItem('nfc_uni_data_v10', JSON.stringify(appData));
+    }
+
+    function showSection(section) {
+        document.getElementById('main-menu').classList.add('hidden');
+        document.getElementById('section-clases').classList.add('hidden');
+        document.getElementById('section-estudios').classList.add('hidden');
+
+        if (section === 'clases') {
+            document.getElementById('section-clases').classList.remove('hidden');
+            renderClasesUI();
+        } else if (section === 'estudios') {
+            document.getElementById('section-estudios').classList.remove('hidden');
+            renderEstudiosUI();
+        }
+    }
+
+    function showMenu() {
+        document.getElementById('section-clases').classList.add('hidden');
+        document.getElementById('section-estudios').classList.add('hidden');
+        document.getElementById('main-menu').classList.remove('hidden');
+    }
+
+    // --- CLASES ---
+    function changeDay(day) {
+        currentDay = day;
+        document.querySelectorAll('.day-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.textContent === day);
+        });
+        renderClasesUI();
+    }
+
+    function renderClasesUI() {
+        const container = document.getElementById('franjas-clases-container');
+        container.innerHTML = '';
+
+        slots.forEach(slot => {
+            const card = document.createElement('div');
+            card.className = 'slot-card';
+            
+            let html = `
+                <div class="slot-title">
+                    <span>${slot.label}</span>
+                    <span class="slot-time">⏰ ${slot.time}</span>
+                </div>
+            `;
+            
+            const currentItem = appData.clases[currentDay][slot.id];
+            const recommendedSubject = officialRecommendations[currentDay][slot.id];
+
+            if (currentItem === null) {
+                html += `<div class="subjects-grid">`;
+                subjects.forEach(sub => {
+                    const extraClass = sub.isSpecial ? 'no-class' : '';
+                    let recText = "";
+                    if (!sub.isSpecial && sub.name.toLowerCase() === recommendedSubject.toLowerCase()) {
+                        recText = `<span class="rec">⭐ Recomendado: ${sub.name}</span>`;
+                    }
+                    html += `<button class="sub-btn sub-${sub.index} ${extraClass}" onclick="selectClaseItem('${slot.id}', '${sub.name}', ${sub.index}, ${sub.isSpecial ? 'true' : 'false'})">
+                                <span>+ ${sub.name}</span>
+                                ${recText}
+                             </button>`;
+                });
+                html += `</div>`;
+            } else {
+                let typeBadge = currentItem.isSpecial ? '' : `<span class="badge-type">${currentItem.type}</span>`;
+                html += `
+                    <div class="selected-card item-${currentItem.colorIndex}">
+                        <div>
+                            <div style="font-size: 15px;">${currentItem.subject}</div>
+                            ${typeBadge}
+                        </div>
+                        <button class="change-btn" onclick="clearClaseItem('${slot.id}')">Cambiar</button>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = html;
+            container.appendChild(card);
+        });
+    }
+
+    function selectClaseItem(slotId, subjectName, colorIdx, isSpecial) {
+        let typeText = "Libre";
+        
+        if (!isSpecial) {
+            let tipoEleccion = prompt(`¿Qué tipo de actividad es para:\n${subjectName}?\n\n1. Teoría\n2. Práctica\n3. Examen`, "1");
+            if (tipoEleccion === null) return;
+
+            typeText = "Teoría";
+            if (tipoEleccion === "2") typeText = "Práctica";
+            if (tipoEleccion === "3") typeText = "Examen";
+        }
+
+        appData.clases[currentDay][slotId] = {
+            subject: subjectName,
+            type: typeText,
+            colorIndex: colorIdx,
+            isSpecial: isSpecial
+        };
+
+        saveData();
+        renderClasesUI();
+    }
+
+    function clearClaseItem(slotId) {
+        appData.clases[currentDay][slotId] = null;
+        saveData();
+        renderClasesUI();
+    }
+
+    // --- ESTUDIOS ---
+    function renderEstudiosUI() {
+        const container = document.getElementById('study-container');
+        container.innerHTML = '';
+
+        days.forEach(day => {
+            let dayBox = document.createElement('div');
+            dayBox.className = 'study-day-container';
+            dayBox.innerHTML = `
+                <div class="study-day-title">📆 ${day}</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div>
+                        <span style="font-size:11px; font-weight:600; color:var(--text-muted)">Franja 1 (8:45 - 10:30)</span>
+                        <textarea id="study-${day}-s1" placeholder="Apuntes..." oninput="saveStudyData('${day}', 's1')">${appData.estudios[day].s1}</textarea>
+                    </div>
+                    <div>
+                        <span style="font-size:11px; font-weight:600; color:var(--text-muted)">Franja 2 (10:45 - 12:30)</span>
+                        <textarea id="study-${day}-s2" placeholder="Apuntes..." oninput="saveStudyData('${day}', 's2')">${appData.estudios[day].s2}</textarea>
+                    </div>
+                    <div>
+                        <span style="font-size:11px; font-weight:600; color:var(--text-muted)">Franja 3 (12:45 - 14:30)</span>
+                        <textarea id="study-${day}-s3" placeholder="Apuntes..." oninput="saveStudyData('${day}', 's3')">${appData.estudios[day].s3}</textarea>
+                    </div>
+                </div>
+            `;
+            container.appendChild(dayBox);
+        });
+    }
+
+    function saveStudyData(day, slotKey) {
+        const val = document.getElementById(`study-${day}-${slotKey}`).value;
+        appData.estudios[day][slotKey] = val;
+        saveData();
+    }
+</script>
+
+</body>
+</html>
